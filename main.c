@@ -10,6 +10,10 @@
 #define MAX_ROWS 100
 #define ID_SIZE sizeof(uint32_t)
 
+#define PAGE_SIZE 4096
+#define TABLE_MAX_PAGES 100
+#define ROWS_PER_PAGE (PAGE_SIZE / ROW_SIZE)
+
 #define USERNAME_SIZE user_size
 #define EMAIL_SIZE user_mail
 #define ROW_SIZE (ID_SIZE + USERNAME_SIZE + EMAIL_SIZE)
@@ -17,6 +21,7 @@
 #define ID_OFFSET 0
 #define USERNAME_OFFSET (ID_OFFSET + ID_SIZE)
 #define EMAIL_OFFSET (USERNAME_OFFSET + USERNAME_SIZE)
+
 
 typedef struct {
   uint32_t id;
@@ -40,14 +45,22 @@ typedef struct {
   uint32_t id_to_delete;
 } Statement;
 
-typedef struct {
+// typedef struct Table{
+//   Row rows[MAX_ROWS];
+//   uint32_t num_rows;
+// }Table;
 
-  Row rows[MAX_ROWS];
+typedef struct Pager{
+  FILE* file;
+  uint32_t file_length;
+  void* pages[TABLE_MAX_PAGES];
+}Pager;
 
+typedef struct Table{
   uint32_t num_rows;
-} Table;
+  Pager* pager;
 
-
+}Table;
 
 int meta_commands(char *input) {
   if (strcmp(input, ".exit") == 0) {
@@ -234,6 +247,8 @@ ExecuteResult execute_statement(Statement *statement, Table *table) {
 
   return EXECUTE_SYNTAX_ERROR;
 }
+
+void pager_open()
 
 
 int main() {
